@@ -1,0 +1,14 @@
+{
+    "apps": {
+        "name": "loadstation-api",
+        "script": "./bin/www",
+        "watch": true,
+        "ignore_watch": [
+            "node_modules",
+            "logs"
+        ],
+        "error_file": "logs/err.log",
+        "out_file": "logs/out.log",
+        "log_date_format": "DD-MM-YYYY HH:mm:ss"
+    }
+}

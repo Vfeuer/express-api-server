@@ -1,0 +1,2 @@
+::1 - - [05/Jan/2021:21:09:04 +0000] "GET /api/nodes/list HTTP/1.1" 200 103 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36"
+::1 - - [06/Jan/2021:00:05:57 +0000] "GET /api/nodes/list HTTP/1.1" 304 - "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36"

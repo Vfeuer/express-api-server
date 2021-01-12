@@ -1,0 +1,5 @@
+06-01-2021 01:05:49: Wed, 06 Jan 2021 00:05:49 GMT express-session deprecated undefined resave option; provide resave option at app.js:40:9
+06-01-2021 01:05:49: Wed, 06 Jan 2021 00:05:49 GMT express-session deprecated undefined saveUninitialized option; provide saveUninitialized option at app.js:40:9
+06-01-2021 01:05:49: Warning: connect.session() MemoryStore is not
+06-01-2021 01:05:49: designed for a production environment, as it will leak
+06-01-2021 01:05:49: memory, and will not scale past a single process.

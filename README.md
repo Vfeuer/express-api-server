@@ -4,6 +4,7 @@
 ```
 npm install
 npm install --save-dev nodemon -g
+npm install --save-dev pm2 -g
 ```
 nodejs and npm are required. The version I used are v14.15.4 and v6.14.10. Other version haven't been tested.
 

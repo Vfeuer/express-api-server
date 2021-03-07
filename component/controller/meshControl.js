@@ -13,11 +13,10 @@ const getMeshSetting = () => {
 }
 
 // function to put setting of mesh into database
-const changeMeshSetting = (wholeMax, safeMax)  => {
+const changeMeshSetting = (wholeMax)  => {
     wholeMax = escape(wholeMax)
-    safeMax = escape(safeMax)
 
-    let sql = `update meshsetting set wholeMax=${wholeMax}, safeMax=${safeMax} where id=1;`
+    let sql = `update meshsetting set wholeMax=${wholeMax} where id=1;`
     // return promise object 
     return dbExec(sql).then(updateData =>{
         if (updateData.affectedRows > 0) {

@@ -8,6 +8,8 @@ var cors = require('cors')()
 const session = require('express-session')
 const RedisStore = require('connect-redis')(session)
 const compression = require('compression')
+const {scanMesh} = require('./component/controller/initControl.js')
+const {readCurrent} = require('./component/controller/subControl')
 
 var usersRouter = require('./component/routes/users');
 var nodesRouter = require('./component/routes/nodes');
@@ -77,5 +79,21 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
+// scan the mesh for 30s to find whether there is new node to add and then start the read task
+const scanRes = scanMesh('/DEMESH/+'+'/heartbeat')
+setTimeout(() => {
+    scanRes.end()
+    
+    // // subscribe to the node by the way each node has a client
+    // getList().then(meshList => {
+    //     for (var i = 0; i < meshList.length; i++) {
+    //         connectUpdate(meshList[i].id, meshList[i].macADR)  // default set all the nodes as no connection 
+    //         readCurrent('/DEMESH/'+meshList[i].macADR+'/heartbeat', meshList[i].id, meshList[i].macADR) //new?
+    //     }
+    // })
+
+    // one client subscribe to all the nodes that has been registed
+    readCurrent()
+}, 500)
 
 module.exports = app;

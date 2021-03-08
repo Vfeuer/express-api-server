@@ -25,6 +25,3 @@ npm run dev
 ```
 npm run prd
 ```
-
-##### Requirement
-Local mysql-database are required to run this api-server, which is included in the folder config.

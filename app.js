@@ -95,6 +95,6 @@ setTimeout(() => {
 
     // one client subscribe to all the nodes that has been registed
     readCurrent()
-}, 500)
+}, 30000)
 
 module.exports = app;

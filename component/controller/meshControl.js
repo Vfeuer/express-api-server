@@ -1,4 +1,15 @@
 const { dbExec, escape } = require('../db/mysql')
+const {scanMesh} = require('./initControl')
+
+// function to intialize the mesh, scan the mesh 30s to register all nodes
+const meshInit = () => {
+    console.log('mehs Init is on')
+    const scanRes = scanMesh('/DEMESH/+'+'/heartbeat')
+    setTimeout(() => {
+        scanRes.end()
+        return true
+    }, 30000)
+}
 
 // function to get setting of mesh from database
 const getMeshSetting = () => {
@@ -28,5 +39,6 @@ const changeMeshSetting = (wholeMax)  => {
 
 module.exports = {
     getMeshSetting,
-    changeMeshSetting
+    changeMeshSetting,
+    meshInit
 }

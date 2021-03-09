@@ -1,8 +1,15 @@
 var express = require('express');
 var router = express.Router();
 const { SuccessModel, ErrorModel } = require("../model/resModel")
-const { getMeshSetting, changeMeshSetting } = require('../controller/meshControl')
+const { getMeshSetting, changeMeshSetting, meshInit } = require('../controller/meshControl')
 const loginCheck = require('../midware/loginCheck')
+
+/* Initialize the mesh */
+router.get('/init', (req, res, next) => {
+  meshInit()
+  return res.json(new SuccessModel({'msg': 'successfully initialized the mesh', 'status': 200}))
+})
+
 /* GET mesh setting. */
 router.get('/setting', (req, res, next) => {
   const result = getMeshSetting()

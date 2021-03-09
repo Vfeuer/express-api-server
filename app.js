@@ -17,10 +17,11 @@ var meshRouter = require('./component/routes/mesh')
 
 var app = express();
 
+// front-end
 app.use(compression())
 app.use(express.static('./dist'))
-
 app.listen(80)
+
 
 app.use(cors)
 

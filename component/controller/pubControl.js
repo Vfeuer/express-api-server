@@ -22,7 +22,7 @@ function setMaxCur (macADR, maxCur) {
     // var client = mqtt.connect('mqtt:raspberrypi:1884')
     message = JSON.stringify(
         { "cmd": "avrsetpar",
-          "avrpar": "maxcur",
+          "avrpar": "smaxcur",
           "avrval": maxCur*10 }
     )
     client.publish('/DEMESH/'+macADR+'/control', message, {qos:1})
@@ -36,7 +36,7 @@ function pressButtonB (macADR) {
     // var client = mqtt.connect('mqtt:raspberrypi:1884')
     message = JSON.stringify(
         { "cmd": "avrsetpar",
-          "avrpar": "buttonB",
+          "avrpar": "opbutton",
           "avrval": 1 }
     )
     client.publish('/DEMESH/'+macADR+'/control', message, {qos:1})

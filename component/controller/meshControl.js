@@ -3,7 +3,6 @@ const {scanMesh} = require('./initControl')
 
 // function to intialize the mesh, scan the mesh 30s to register all nodes
 const meshInit = () => {
-    console.log('mehs Init is on')
     const scanRes = scanMesh('/DEMESH/+'+'/heartbeat')
     setTimeout(() => {
         scanRes.end()

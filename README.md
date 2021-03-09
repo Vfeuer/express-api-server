@@ -1,4 +1,5 @@
 ## express-api-server for project AGCCS-CTRL22
+This programm aims to develop the server and API-interface for the user interface of project AGCCS-CTRL22. It also contains the compiled user interface, which is running on port 80.
 
 ### Guidelines for Installation
 

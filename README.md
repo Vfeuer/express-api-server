@@ -6,7 +6,7 @@
 ```
 nodejs v14.15.3
 npm v6.14.10 (compatibility of lower version hasn't been tested)
-mysql v8.0.22(version higher than v5.5.53)
+mysql v8.0.22(at least v5.5.53)
 ```
 
 ##### Project setup

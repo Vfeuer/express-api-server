@@ -9,7 +9,8 @@ nodejs v14.15.3
 npm v6.14.10 (compatibility of lower version hasn't been tested)
 mysql v8.0.22(at least v5.5.53) or MariaDB v10.0.28 (for rasbian) 
 redis v5.0.3
-notes:before set up project, ensure that the database loadstation is created with the source file loadstation.sql, which is in folder conf
+notes:before set up project, 
+make sure that the database "loadstation" is created with the source file "loadstation.sql", which is in folder "conf"
 ```
 
 ##### Project setup

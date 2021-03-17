@@ -2,13 +2,7 @@ var express = require('express');
 var router = express.Router();
 const { SuccessModel, ErrorModel } = require("../model/resModel")
 const { getMeshSetting, changeMeshSetting, meshInit } = require('../controller/meshControl')
-const loginCheck = require('../midware/loginCheck')
-
-/* Initialize the mesh */
-router.get('/init', (req, res, next) => {
-  meshInit()
-  return res.json(new SuccessModel({'msg': 'successfully initialized the mesh', 'status': 200}))
-})
+const adminCheck = require('../midware/adminCheck')
 
 /* GET mesh setting. */
 router.get('/setting', (req, res, next) => {
@@ -25,7 +19,7 @@ router.get('/setting', (req, res, next) => {
 });
 
 /* Post mesh setting. */
-router.post('/setting', (req, res, next) => {
+router.post('/setting', adminCheck, (req, res, next) => {
   const { wholeMax, safeMax } = req.body
   const result = changeMeshSetting(wholeMax, safeMax)
   return result.then(val => {
@@ -36,6 +30,15 @@ router.post('/setting', (req, res, next) => {
       new ErrorModel({'msg': 'Failed to get the setting of mesh', 'status': 500})
     )
 })
+});
+
+/* initialize the whole mesh. */
+router.post('/init', adminCheck, (req, res, next) => {
+  meshInit().then(val => {
+    if (val) {
+      return res.json( new SuccessModel({'msg': 'successfully initialized the mesh', 'status': 202})
+    )}
+  })
 });
 
 module.exports = router;

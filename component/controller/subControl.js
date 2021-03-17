@@ -1,4 +1,5 @@
-const {currentUpdate, connectUpdate, statusUpdate, getList, getInfo} = require('./dataControl')
+const {currentUpdate, connectUpdate, statusUpdate, getList, getInfo, macReg, infoUpdate} = require('./dataControl')
+const {MQTT_CONF} = require('../../conf/configuration')
 var mqtt = require('mqtt')
 var noConnect = new Array()
 var connect = false
@@ -18,46 +19,94 @@ function onConnect (id, macADR) {
     clearTimeout(noConnect[id])
 }
 
-// // every node has its own client to receive and update the currentvalue
-// function readCurrent (top, id, macADR) {
-//     var client = mqtt.connect('mqtt:192.168.2.109:1884')
-//     client.subscribe(top,{qos:1})
-//     client.on('message', function (topic,message) {
-//         var mesJson = JSON.parse(message)
-//         currentUpdate(id, mesJson.dev, mesJson.load, mesJson.maxload)
-//         onConnect(id, mesJson.dev)  // once message received, reset the timer 
-//         checkConnect(id, mesJson.dev)
-//     })
-//     return client
-// }
-
-// one client reveive the data of all nodes and control
-function readCurrent () {
-    // var client = mqtt.connect('mqtt:192.168.2.109:1884')
-    var client = mqtt.connect('mqtt:192.168.5.1:1884')
-    // var client = mqtt.connect('mqtt:raspberrypi:1884')
-
-    // subscribe to all the nodes and start the connection check
+//Client subscribe heartbeat task to read the data of all nodes and check its connection
+function readData () {
+    var client = mqtt.connect(MQTT_CONF)
+    client.subscribe('/DEMESH/+/heartbeat',{qos:1})
+    //start the connection check
     getList().then(meshList => {
-        for (var i = 0; i < meshList.length; i++) {
-            client.subscribe('/DEMESH/'+meshList[i].macADR+'/heartbeat',{qos:1})
-            checkConnect (meshList[i].id ,meshList[i].macADR)
+        if(meshList[0]) {
+            for (var i = 0; i < meshList.length; i++) {
+                checkConnect (meshList[i].id ,meshList[i].macADR)
+            }
         }
-    })
+        client.on('message', function (topic,message) {
+            var mesJson = JSON.parse(message)
+            getInfo(mesJson.dev).then(dataRows => {
+                // this is a new Node
+                if(!dataRows) {
+                    macReg(mesJson.dev).then(val => {
+                        if(val) {
+                            getInfo(mesJson.dev).then(dataRows => {
+                                id = dataRows[0].id
+                                onConnect(id, mesJson.dev)  // once message received, reset the timer 
+                                checkConnect(id, mesJson.dev)
+                                statusUpdate(id, mesJson.dev ,mesJson.ccss)
+                                currentUpdate(id, mesJson.dev ,mesJson.smaxcur, mesJson.cmaxcur, mesJson.phases, mesJson.cur1, mesJson.cur2, mesJson.cur3)
+                                readInfo(mesJson.dev)
+                            })
+                        }
+                    })
 
-    client.on('message', function (topic,message) {
-        var mesJson = JSON.parse(message)
-        getInfo(mesJson.dev).then(dataRows => {
-            id = dataRows[0].id
-            onConnect(id, mesJson.dev)  // once message received, reset the timer 
-            checkConnect(id, mesJson.dev)
-            statusUpdate(id, mesJson.dev ,mesJson.ccss)
-            currentUpdate(id, mesJson.dev ,mesJson.smaxcur, mesJson.cmaxcur, mesJson.phases, mesJson.cur1, mesJson.cur2, mesJson.cur3)
+                }
+                else {
+                    id = dataRows[0].id
+                    onConnect(id, mesJson.dev)  // once message received, reset the timer 
+                    checkConnect(id, mesJson.dev)
+                    statusUpdate(id, mesJson.dev ,mesJson.ccss)
+                    currentUpdate(id, mesJson.dev ,mesJson.smaxcur, mesJson.cmaxcur, mesJson.phases, mesJson.cur1, mesJson.cur2, mesJson.cur3)
+                }
+            })
         })
     })
     return client
 }
 
+// read the status and system information of node with mqtt
+function readInfo (macADR) {
+    var client = mqtt.connect(MQTT_CONF)
+    client.subscribe('/DEMESH/+/acknowledge',{qos:1})
+    client.publish('/DEMESH/'+macADR+'/control', JSON.stringify({"cmd": "status"}), {qos:2})
+    client.publish('/DEMESH/'+macADR+'/control', JSON.stringify({"cmd": "system"}), {qos:2})
+    var subSuccess = -1 // -1: no message arrived, 0: received one message, 1:received both 2 message
+    client.on('message', function (topic,message){
+        var mesJson = JSON.parse(message)
+        getInfo(mesJson.dev).then(dataRows => {
+            if(!dataRows) {
+                return false
+            }
+            id = dataRows[0].id
+            infoUpdate(id, mesJson.dev, mesJson.parent, mesJson.rssi, mesJson.layer, mesJson.plat, mesJson.version,
+                mesJson.board, mesJson.avrver).then(val => {
+                    if(val) {
+                        subSuccess++
+                    }
+                    if(subSuccess>0) {
+                        client.end()
+                        return true
+                    }
+                })
+        })
+    })
+}
+
+//read the status and system information of all nodes
+function readAllInfo () {
+    getList().then(meshList => {
+        if(meshList[0]) {
+            for (var i = 0; i < meshList.length; i++) {
+                readInfo(meshList[i].macADR)
+                if(i==meshList.length-1) {
+                    return true
+                }
+            }
+        }
+        return false
+    })
+}
+
 module.exports = {
-    readCurrent
+    readData,
+    readInfo,
+    readAllInfo
 }

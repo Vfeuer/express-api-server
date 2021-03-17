@@ -1,6 +1,6 @@
 {
     "apps": {
-        "name": "loadstation-api",
+        "name": "chargingpark-server",
         "script": "./bin/www",
         "watch": true,
         "ignore_watch": [

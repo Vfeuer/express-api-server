@@ -1,13 +1,11 @@
 const { dbExec, escape } = require('../db/mysql')
-const {scanMesh} = require('./initControl')
 
 // function to intialize the mesh, scan the mesh 30s to register all nodes
 const meshInit = () => {
-    const scanRes = scanMesh('/DEMESH/+'+'/heartbeat')
-    setTimeout(() => {
-        scanRes.end()
+    let sql =`TRUNCATE TABLE nodestatus`
+    return dbExec(sql).then(val => {
         return true
-    }, 30000)
+    })
 }
 
 // function to get setting of mesh from database

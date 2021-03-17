@@ -8,12 +8,14 @@ var cors = require('cors')()
 const session = require('express-session')
 const RedisStore = require('connect-redis')(session)
 const compression = require('compression')
-const {scanMesh} = require('./component/controller/initControl.js')
-const {readCurrent} = require('./component/controller/subControl')
+const {readData} = require('./component/controller/subControl')
+var bodyParser = require('body-parser');
+var multer  = require('multer');
 
 var usersRouter = require('./component/routes/users');
 var nodesRouter = require('./component/routes/nodes');
 var meshRouter = require('./component/routes/mesh')
+var uploadRouter = require('./component/routes/upload')
 
 var app = express();
 
@@ -42,7 +44,11 @@ if (ENV !== 'production') {
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-// app.use(express.static(path.join(__dirname, 'public')));
+
+app.use(express.static('public')); // set the path where the static file is
+// app.use('/public', express.static('public')); // set the path where the static file is
+app.use(bodyParser.urlencoded({ extended: false })); // if the request body is not json, convert the request body into an object
+app.use(multer({ dest: '/tmp/'}).array('file'));
 
 const redisClient = require('./component/db/redis')
 const sessionStore = new RedisStore ({
@@ -54,7 +60,7 @@ app.use(session({
   cookie: {
     // path: '/',  // default setting
     // httpOnly: true, // default setting
-    maxAge: 3 * 60 * 60 * 1000
+    maxAge: 1 * 60 * 60 * 1000
   },
   store: sessionStore
 }))
@@ -63,6 +69,7 @@ app.use(session({
 app.use('/api/users', usersRouter);
 app.use('/api/nodes', nodesRouter);
 app.use('/api/mesh', meshRouter);
+app.use('/upload', uploadRouter)
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -80,21 +87,7 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
-// scan the mesh for 30s to find whether there is new node to add and then start the read task
-const scanRes = scanMesh('/DEMESH/+'+'/heartbeat')
-setTimeout(() => {
-    scanRes.end()
-    
-    // // subscribe to the node by the way each node has a client
-    // getList().then(meshList => {
-    //     for (var i = 0; i < meshList.length; i++) {
-    //         connectUpdate(meshList[i].id, meshList[i].macADR)  // default set all the nodes as no connection 
-    //         readCurrent('/DEMESH/'+meshList[i].macADR+'/heartbeat', meshList[i].id, meshList[i].macADR) //new?
-    //     }
-    // })
-
-    // one client subscribe to all the nodes that has been registed
-    readCurrent()
-}, 30000)
+//start the read task
+readData()
 
 module.exports = app;

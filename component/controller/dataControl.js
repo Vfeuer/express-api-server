@@ -53,7 +53,7 @@ const currentUpdate = (id, macADR ,maxCur, cmaxCur, phases, cur1, cur2, cur3) =>
     cur2 = escape(cur2/10)
     cur3 = escape(cur3/10)
     let sql = `update nodestatus set cmaxCur = ${cmaxCur}, Phases = ${phases},
-    cur1 = ${cur1}, cur2 = ${cur2}, cur3 = ${cur3} where id = ${id} and macADR = ${macADR}`
+    cur1 = ${cur1}, cur2 = ${cur2}, cur3 = ${cur3}, maxCur = ${maxCur} where id = ${id} and macADR = ${macADR}`
     return dbExec(sql).then(updateData =>{
         if (updateData.affectedRows > 0) {
             return true 
@@ -74,7 +74,7 @@ const connectUpdate = (id, macADR, connect=false) => {
     else {
         // If one node lose connection, reset the workmode of node to auto
         connect = escape(connect)
-        sql = `update nodestatus set connect = ${connect}, workmode = 'auto', Phases = 0, maxCur = 0 where id = ${id} and macADR = ${macADR};`
+        sql = `update nodestatus set connect = ${connect}, workmode = 'auto', Phases = 0, maxCur = 0, workStatus = 0, cur1 =0, cur2 = 0, cur3 =0 where id = ${id} and macADR = ${macADR};`
     }
     dbExec(sql)
 }
@@ -112,6 +112,48 @@ const statusUpdate = (id, macADR, workStatus) => {
             }
             return false // no connection to database
         }) // make no change and return if workStatus do not change
+    })
+}
+
+const infoUpdate = (id, macADR, Parent = null,
+    Rssi = null, Layer = null, Plat = null, Version = null, Board = null, avrVer = null) => {
+    id = escape(id)
+    macADR = escape(macADR)
+    let sql = `update nodestatus set `
+    if (Parent) {
+        Parent = escape(Parent)
+        sql+=`Parent=${Parent}, `
+    }
+    if (Rssi) {
+        Rssi = escape(Rssi)
+        sql+=`Rssi=${Rssi}, `
+    }
+    if (Layer) {
+        Layer = escape(Layer)
+        sql+=`Layer=${Layer}, `
+    }
+    if (Plat) {
+        Plat = escape(Plat)
+        sql+=`Plat=${Plat}, `
+    }
+    if (Version) {
+        Version = escape(Version)
+        sql+=`Version=${Version}, `
+    }
+    if (Board) {
+        Board = escape(Board)
+        sql+=`Board=${Board}, `
+    }
+    if (avrVer!=null) {
+        avrVer = escape(avrVer)
+        sql+=`avrVer=${avrVer}, `
+    }
+    sql += `macADR=${macADR} where id=${id};`
+    return dbExec(sql).then(updateData =>{
+        if (updateData.affectedRows > 0) {
+            return true 
+        }
+        return false // id and macADR do not match or no connection(no currentvalue received)
     })
 }
 
@@ -398,5 +440,6 @@ module.exports = {
     statusUpdate,
     sumManCur,
     autoWork,
-    getInfo
+    getInfo,
+    infoUpdate
 }

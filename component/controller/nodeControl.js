@@ -1,6 +1,7 @@
 const { dbExec, escape } = require('../db/mysql')
 const {setPhase, setMaxCur} = require('./pubControl')
 const {sumManCur, calRemain, autoWork } = require('./dataControl')
+const {readAllInfo} = require('./subControl')
 
 // function to get nodestatus from database
 const getNodesStatus = (id = {}) => {
@@ -21,7 +22,9 @@ const getNodesStatus = (id = {}) => {
 
 // function to get nodelist from database
 const getNodesList = (id = {}) => {
-    let sql = `select id, nodeName, macADR, connect from nodestatus `
+    readAllInfo()
+    let sql = `select id, nodeName, macADR, connect, Parent,
+    Rssi, Layer, Plat, Version, Board, avrVer from nodestatus `
     id = escape(id)
     if (id) {
         sql += `where id = ${id};`

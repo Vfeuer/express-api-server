@@ -5,14 +5,13 @@ const {jwtKey} = require('../../conf/configuration')
 module.exports = (req, res, next) => {
     jwt.verify(req.headers.authorization, jwtKey, (err, data) => {
         if (err) {
-            res.json( new ErrorModel(meta ={'error': err, status :403}))
+            res.json( new ErrorModel(meta ={'error': err, status :401}))
         }
         if (data.username === 'admin') {
-            console.log('admincheck passed')
             next()
             return
         }
         res.json( new ErrorModel(meta= {'msg': 'Users except Admin has only permission to read data',
-        'status': 403}))
+        'status': 401}))
     })
 }

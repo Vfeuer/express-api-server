@@ -11,7 +11,8 @@ const compression = require('compression')
 const {readData} = require('./component/controller/subControl')
 var bodyParser = require('body-parser');
 var multer  = require('multer');
-
+const http = require('http')
+ 
 var usersRouter = require('./component/routes/users');
 var nodesRouter = require('./component/routes/nodes');
 var meshRouter = require('./component/routes/mesh')
@@ -22,8 +23,7 @@ var app = express();
 // front-end
 app.use(compression())
 app.use(express.static('./dist'))
-app.listen(80)
-
+app.listen(8071, '0.0.0.0')
 
 app.use(cors)
 
@@ -69,7 +69,7 @@ app.use(session({
 app.use('/api/users', usersRouter);
 app.use('/api/nodes', nodesRouter);
 app.use('/api/mesh', meshRouter);
-app.use('/upload', uploadRouter)
+app.use('/api/upload', uploadRouter)
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

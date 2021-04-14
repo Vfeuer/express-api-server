@@ -38,6 +38,11 @@ router.post('/init', adminCheck, (req, res, next) => {
     if (val) {
       return res.json( new SuccessModel({'msg': 'successfully initialized the mesh', 'status': 202})
     )}
+    // else {
+    //   return res.json(
+    //     new ErrorModel({'msg': 'Failed to initialized the mesh', 'status': 500})
+    //   )
+    // }
   })
 });
 

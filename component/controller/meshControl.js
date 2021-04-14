@@ -1,18 +1,21 @@
-const { dbExec, escape } = require('../db/mysql')
+const {queryData, dataExec, escape} = require('../db/sqlite')
 
 // function to intialize the mesh, scan the mesh 30s to register all nodes
 const meshInit = () => {
-    let sql =`TRUNCATE TABLE nodestatus`
-    return dbExec(sql).then(val => {
+    let sql =`delete from nodestatus;`
+    return dataExec(sql).then(updateData => {
+        if (updateData.changes <= 0) {
+            return false
+        }
         return true
     })
 }
 
 // function to get setting of mesh from database
 const getMeshSetting = () => {
-    let sql = `select * from meshsetting `
+    let sql = `select * from meshsetting;`
     // return promise object 
-    return dbExec(sql).then(meshSetting =>{
+    return queryData(sql).then(meshSetting =>{
         if(meshSetting[0]){
             return meshSetting[0]
             }
@@ -26,8 +29,8 @@ const changeMeshSetting = (wholeMax)  => {
 
     let sql = `update meshsetting set wholeMax=${wholeMax} where id=1;`
     // return promise object 
-    return dbExec(sql).then(updateData =>{
-        if (updateData.affectedRows > 0) {
+    return dataExec(sql).then(updateData =>{
+        if (updateData.changes > 0) {
             return true
         }
         return false

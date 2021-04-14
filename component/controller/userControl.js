@@ -1,4 +1,4 @@
-const { dbExec, escape } = require('../db/mysql')
+const {queryData, dataExec, escape} = require('../db/sqlite')
 const {genPassword} = require('./pwdControl')
 var jwt = require('jsonwebtoken')
 const {jwtKey} = require('../../conf/configuration')
@@ -12,7 +12,7 @@ const login = (username, password) => {
     password = genPassword(password)
 
     const sql = `select * from user where password='${password}' and username=${username};`
-    return dbExec(sql).then(userinfo =>{
+    return queryData(sql).then(userinfo =>{
         if(userinfo[0]){
         var token = jwt.sign(content, jwtKey, {
             expiresIn: 1 * 60 * 60 * 1000 // 24小时过期,以s作为单位
@@ -37,8 +37,8 @@ const changePWD = (username, newpassword) => {
 
     let sql = `update user set password=${newpassword} where username=${username};`
     
-    return dbExec(sql).then(updateData =>{
-        if (updateData.affectedRows > 0) {
+    return dataExec(sql).then(updateData =>{
+        if (updateData.changes > 0) {
             return true
         }
         return false
@@ -46,13 +46,12 @@ const changePWD = (username, newpassword) => {
 }
 
 const addUser = (username, password) => {
-    console.log('adduser')
     username = escape(username)
     password = escape(password)
     password = `'${genPassword(password)}'`
     let sql = `insert into user (username, password) values (${username}, ${password});`
-    return dbExec(sql).then(updateData =>{
-        if (updateData.affectedRows > 0) {
+    return dataExec(sql).then(updateData =>{
+        if (updateData.changes > 0) {
             return true
         }
         return false

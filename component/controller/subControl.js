@@ -41,8 +41,10 @@ function readData () {
                                 id = dataRows[0].id
                                 onConnect(id, mesJson.dev)  // once message received, reset the timer 
                                 checkConnect(id, mesJson.dev)
-                                statusUpdate(id, mesJson.dev ,mesJson.ccss)
-                                currentUpdate(id, mesJson.dev ,mesJson.smaxcur, mesJson.cmaxcur, mesJson.phases, mesJson.cur1, mesJson.cur2, mesJson.cur3)
+                                currentUpdate(id, mesJson.dev ,mesJson.amaxcur, mesJson.cmaxcur,
+                                    mesJson.aphases, mesJson.cur1, mesJson.cur2, mesJson.cur3).then(val =>{
+                                        statusUpdate(id, mesJson.dev ,mesJson.ccss)
+                                    })
                                 readInfo(mesJson.dev)
                             })
                         }
@@ -53,8 +55,10 @@ function readData () {
                     id = dataRows[0].id
                     onConnect(id, mesJson.dev)  // once message received, reset the timer 
                     checkConnect(id, mesJson.dev)
-                    statusUpdate(id, mesJson.dev ,mesJson.ccss)
-                    currentUpdate(id, mesJson.dev ,mesJson.smaxcur, mesJson.cmaxcur, mesJson.phases, mesJson.cur1, mesJson.cur2, mesJson.cur3)
+                    currentUpdate(id, mesJson.dev ,mesJson.amaxcur, mesJson.cmaxcur, mesJson.aphases,
+                        mesJson.cur1, mesJson.cur2, mesJson.cur3).then(val =>{
+                            statusUpdate(id, mesJson.dev ,mesJson.ccss)
+                    })
                 }
             })
         })
@@ -65,28 +69,34 @@ function readData () {
 // read the status and system information of node with mqtt
 function readInfo (macADR) {
     var client = mqtt.connect(MQTT_CONF)
-    client.subscribe('/DEMESH/+/acknowledge',{qos:1})
+    client.subscribe('/DEMESH/'+macADR+'/acknowledge', {qos:1})
     client.publish('/DEMESH/'+macADR+'/control', JSON.stringify({"cmd": "status"}), {qos:2})
     client.publish('/DEMESH/'+macADR+'/control', JSON.stringify({"cmd": "system"}), {qos:2})
-    var subSuccess = -1 // -1: no message arrived, 0: received one message, 1:received both 2 message
+    var gotStatus= 0 // 0: no message arrived, 1: received message
+    var gotSystem= 0 // 0: no message arrived, 1: received message
     client.on('message', function (topic,message){
         var mesJson = JSON.parse(message)
-        getInfo(mesJson.dev).then(dataRows => {
-            if(!dataRows) {
-                return false
-            }
-            id = dataRows[0].id
-            infoUpdate(id, mesJson.dev, mesJson.parent, mesJson.rssi, mesJson.layer, mesJson.plat, mesJson.version,
-                mesJson.board, mesJson.avrver).then(val => {
-                    if(val) {
-                        subSuccess++
-                    }
-                    if(subSuccess>0) {
-                        client.end()
-                        return true
-                    }
-                })
-        })
+        if (mesJson.mtype == 'status') {
+            gotStatus = 1
+        }
+        else if (mesJson.mtype == 'system') {
+            gotSystem = 1
+        }
+        if (gotSystem || gotStatus) {
+            getInfo(mesJson.dev).then(dataRows => {
+                if(!dataRows) {
+                    return false
+                }
+                id = dataRows[0].id
+                infoUpdate(id, mesJson.dev, mesJson.parent, mesJson.rssi, mesJson.layer, mesJson.plat, mesJson.version,
+                    mesJson.board, mesJson.avrver).then(val => {
+                        if(gotStatus*gotSystem) {
+                            client.end()
+                            return true
+                        }
+                    })
+            })
+        }
     })
 }
 

@@ -12,6 +12,8 @@ const {readData} = require('./component/controller/subControl')
 var bodyParser = require('body-parser');
 var multer  = require('multer');
 const http = require('http')
+var aedesMqtt = require('./component/db/aedesMqtt').aedesMqtt
+var aedesPersistenceRedis = require('aedes-persistence-redis')
  
 var usersRouter = require('./component/routes/users');
 var nodesRouter = require('./component/routes/nodes');
@@ -87,7 +89,28 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
-//start the read task
+// set up mqtt server
+var adeasSettings = {
+  persistence: aedesPersistenceRedis({
+      port: 6379,          // Redis port
+      host: '127.0.0.1',   // Redis host
+      family: 4,           // 4 (IPv4) or 6 (IPv6)
+      db: 0,
+      maxSessionDelivery: 100, // maximum offline messages deliverable on client CONNECT, default is 1000
+      packetTTL: function (packet) { // offline message TTL, default is disabled
+        return 10 //seconds
+      }
+  })
+}
+var mqttPort = 1884
+var wsPort = 9001
+var mqttServer = new aedesMqtt(adeasSettings, mqttPort, wsPort)
+function subCB (subscriptions, client) {
+  console.log(subscriptions)
+  console.log(client.id)
+}
+mqttServer.sub(subCB)
+//start the mqtt read task 
 readData()
 
 module.exports = app;

@@ -21,7 +21,7 @@ function onConnect (id, macADR) {
 
 //Client subscribe heartbeat task to read the data of all nodes and check its connection
 function readData () {
-    var client = mqtt.connect(MQTT_CONF)
+    var client = mqtt.connect(MQTT_CONF, {clientId: 'client_hbRead'})
     client.subscribe('/DEMESH/+/heartbeat',{qos:1})
     //start the connection check
     getList().then(meshList => {
@@ -68,7 +68,7 @@ function readData () {
 
 // read the status and system information of node with mqtt
 function readInfo (macADR) {
-    var client = mqtt.connect(MQTT_CONF)
+    var client = mqtt.connect(MQTT_CONF, {clientId: 'infoCli_'+macADR})
     client.subscribe('/DEMESH/'+macADR+'/acknowledge', {qos:1})
     client.publish('/DEMESH/'+macADR+'/control', JSON.stringify({"cmd": "status"}), {qos:2})
     client.publish('/DEMESH/'+macADR+'/control', JSON.stringify({"cmd": "system"}), {qos:2})
